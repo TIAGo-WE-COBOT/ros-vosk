@@ -1,0 +1,8 @@
+<launch>
+    <!-- Set the path to the environment -->
+    <arg name = "venv"  default = "$(optenv VOSK_VENV)" />
+
+    <!-- Launch the node for text-to-speech -->
+    <node pkg = "ros_vosk"  name = "vosk_node"  type = "vosk_node.py"   
+    launch-prefix = "$(arg venv)" />
+</launch> 
