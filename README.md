@@ -10,7 +10,7 @@ A ROS package for speech-to-text services based on [Vosk](https://github.com/alp
   ```bash
   sudo apt install ros-${ROS_DISTRO}-ros-vosk
   ```
-  don't forget to run `catkin_make`
+  don't forget to run `catkin_make` (or `catkib build`, depending on how you built your workspace).
   
 2. Install Dependencies
 
@@ -49,6 +49,19 @@ A ROS package for speech-to-text services based on [Vosk](https://github.com/alp
 * tts/status -> tts_engine.py publishes the state of the engine. True if it is speaking False if it is not. If the status is true vosk_node won't process the audio stream so it won't listen to itself 
 * tts/phrase -> tts_engine.py subscribes to this topic in order to speak the given string. Name your desire and it shall be heard by all in the room..
 
-## Author
+## TODO
+- [ ] languages
+  - [ ] support for Italian model
+- [ ] speaker recognition
+  - [ ] support for speaker recognition model
+  - [ ] speaker tracking based on x-vector
+  - [ ] speaker recognition based on sound direction (for multi-channel microphones)
+- [ ] make the output 
+
+
+## Authors
 Angelo Antikatzidis <an.antikatzidis@gmail.com>
 Nickolay V. Shmyrev <nshmyrev@gmail.com>
+
+## Contributors
+Luca Pozzi <luca6.pozzi@mail.polimi.it>
