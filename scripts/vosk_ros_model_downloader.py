@@ -250,7 +250,9 @@ class model_downloader():
         self.model_info_message.config(text=info)
 
     def get_model_link(self, model_to_download):
-        soup = BeautifulSoup(self.r.data, "lxml")
+        # Parser changed from "lxml" to "html.parser" based on:
+        # https://stackoverflow.com/questions/24398302/bs4-featurenotfound-couldnt-find-a-tree-builder-with-the-features-you-requeste
+        soup = BeautifulSoup(self.r.data, "html.parser")
 
         for link in soup.findAll('a'):
             model_link = link.get('href')
