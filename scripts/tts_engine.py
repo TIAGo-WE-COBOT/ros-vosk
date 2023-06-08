@@ -32,6 +32,9 @@ class tts_engine():
 
         rospy.loginfo("The robot says: " + phrase)
         self.engine = pyttsx3.init()
+        self.engine.setProperty('voice', 'italian')  # TODO: better!
+        self.engine.setProperty('rate', 150)    # default = 200
+
         self.engine.connect('started-utterance', self.tts_onStart)
         self.engine.connect('finished-utterance', self.tts_onEnd)
         self.engine.say(phrase,"tts_engine")
