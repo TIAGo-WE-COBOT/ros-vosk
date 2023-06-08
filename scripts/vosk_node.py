@@ -106,16 +106,13 @@ class vosk_sr():
             with sd.RawInputStream(samplerate=self.samplerate, blocksize=16000, device=self.input_dev_num, dtype='int16',
                                channels=1, callback=self.stream_callback):
                 rospy.logdebug('Started recording')
-                
                 rec = vosk.KaldiRecognizer(self.model, self.samplerate)
                 print("Vosk is ready to listen!")
                 isRecognized = False
                 isRecognized_partially = False
                 
-            
                 while not rospy.is_shutdown():
                     self.tts_status_listenner()
-
                     if self.tts_status == True:
                         # If the text to speech is operating, clear the queue
                         with self.q.mutex:
@@ -136,6 +133,7 @@ class vosk_sr():
                                 result_text = diction["text"]
                                 rospy.loginfo(result_text)
                                 isRecognized = True
+            
                             else:
                                 isRecognized = False
                             # Resets current results so the recognition can continue from scratch
