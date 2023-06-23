@@ -1,0 +1,3 @@
+[submodule "scripts/pyvirtualaudiocable"]
+	path = scripts/pyvirtualaudiocable
+	url = https://github.com/dynopii/pyvirtualaudiocable.git
