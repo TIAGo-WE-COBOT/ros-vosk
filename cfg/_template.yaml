@@ -1,0 +1,13 @@
+vosk/model: <vosk-model-TODO>
+vosk/spk:model: "vosk-model-spk-0.4"  # at the time of writing, the only one available
+vosk/sample_rate: <int sample rate>
+vosk/blocksize: <int block size>
+
+tts/voice: <language>  
+tts/rate: <int tts rate>
+# To get the full list of PyTTSx3 voices run:
+# import pyttsx3
+# engine = pyttsx3.init()
+# voices = engine.getProperty('voices')
+# for voice in voices:
+#    print(voice.id) 

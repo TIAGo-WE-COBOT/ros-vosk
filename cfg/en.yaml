@@ -1,5 +1,5 @@
-vosk/model: vosk-model-it-0.22
+vosk/model: vosk-model-small-en-us-0.15
 vosk/sample_rate: 16000
 vosk/blocksize: 16000
-tts/voice: italian
+tts/voice: english
 tts/rate: 150
