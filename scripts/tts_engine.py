@@ -10,6 +10,9 @@ from std_msgs.msg import Bool
 class tts_engine():
 
     def __init__(self):
+        self.voice = rospy.get_param('tts/voice', "english")
+        self.rate  = rospy.get_param('tts/rate',   150) 
+
         rospy.Subscriber("tts/phrase", String, self.callback)
         self.pubStatus = rospy.Publisher('tts/status', Bool, queue_size=0)
 
@@ -32,9 +35,10 @@ class tts_engine():
 
         rospy.loginfo("The robot says: " + phrase)
         self.engine = pyttsx3.init()
-        self.engine.setProperty('voice', 'italian')  # TODO: better!
-        self.engine.setProperty('rate', 150)    # default = 200
-
+        # Set voice properties
+        self.engine.setProperty('voice', self.voice)
+        self.engine.setProperty('rate',  self.rate)
+        
         self.engine.connect('started-utterance', self.tts_onStart)
         self.engine.connect('finished-utterance', self.tts_onEnd)
         self.engine.say(phrase,"tts_engine")

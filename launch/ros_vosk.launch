@@ -1,11 +1,12 @@
 <launch>
   <!-- Set the path to the environment -->
   <arg name = "venv"    default = "$(optenv VOSK_VENV)" />
-  <arg name = "config"  default = "params" />
+  <arg name = "config"  default = "en" />
 
   <!-- Speech recognition node -->
   <node name="vosk_engine" pkg="ros_vosk" type="vosk_node.py" 
   respawn="true" output="screen" launch-prefix="$(arg venv)" />
+  
   <rosparam file="$(find ros_vosk)/cfg/$(arg config).yaml" command="load" ns="" />
 
   <!-- Text-to-speech node -->
