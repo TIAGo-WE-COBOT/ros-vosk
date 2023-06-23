@@ -1,9 +1,0 @@
-<launch>
-  <!-- Set the path to the environment -->
-  <arg name = "venv"    default = "$(optenv VOSK_VENV)" />
-  
-  <!-- Speech recognition node -->
-  <node name="interaction" pkg="ros_vosk" type="interaction.py" 
-  respawn="true" output="screen" launch-prefix="$(arg venv)" />
-  
-</launch>
