@@ -1,4 +1,4 @@
-vosk/model: <vosk-model-TODO>
+vosk/model: <vosk-model-TODO> # find a list of available models at https://alphacephei.com/vosk/models
 vosk/spk:model: "vosk-model-spk-0.4"  # at the time of writing, the only one available
 vosk/sample_rate: <int sample rate>
 vosk/blocksize: <int block size>
