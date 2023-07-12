@@ -28,12 +28,11 @@ from mmap import MAP_SHARED
 
 import rospy
 import rospkg
-from ros_vosk.msg import speech_recognition
+from ros_vosk.msg import SpeechRecognition
 from std_msgs.msg import String, Bool
 
 import vosk_ros_model_downloader as downloader
 
-FROM_FILE = True
 
 class VoskSpeechRecognition():
     def __init__(self):
@@ -93,6 +92,9 @@ class VoskSpeechRecognition():
         ###################
         ### Stream init ###
         ###################
+        self.timer = 0.0            #[s]
+        self.t_old = rospy.Time(0)  #[s]
+        self.TIME_THRESHOLD = 2.0   #[s]
         # TODO. This should be removed and data got directly from audio topic
         self.stream = sd.RawInputStream(samplerate=self.samplerate, 
                                         blocksize=16000, 
@@ -110,39 +112,34 @@ class VoskSpeechRecognition():
                                                     self.tts_get_status)
         # Get ready to broadcast the results.
         self.pub_vosk = rospy.Publisher('speech_recognition/vosk_result',
-                                        speech_recognition, 
+                                        SpeechRecognition, 
                                         queue_size=10)
         self.pub_final = rospy.Publisher('speech_recognition/final_result', 
                                          String, 
                                          queue_size=10)
         self.pub_partial = rospy.Publisher('speech_recognition/partial_result',
                                            String, queue_size=10)
-        self.msg = speech_recognition()
+        self.msg = SpeechRecognition()
 
         rospy.on_shutdown(self.cleanup)
-
 
     def cleanup(self):
         self.stream.abort()
         rospy.logwarn("Shutting down VOSK speech recognition node...")
-        
-    def tts_get_status(self,msg):
-        self.tts_status = msg.data
-
+       
     def start_stream(self):
         self.stream.start()
         rospy.logdebug('Started recording')
-    
-    def stream_callback(self, indata, frames, time, status):
-        #"""This is called (from a separate thread) for each audio block."""
-        if status:
-            print(status, file=sys.stderr)
-        self.q.put(bytes(indata))
+
+    def tts_get_status(self,msg):
+        self.tts_status = msg.data
+
 
     def speech_recognize(self):
         # Assume no detection if not explicitly found
-        isRecognized = False
-        isRecognized_partially = False
+        partial_text = 'unk'
+        final_text   = 'unk'
+        spk_sig      = []
         
         buffer, overflowed = self.stream.read(self.stream.read_available)
         if overflowed:
@@ -160,60 +157,52 @@ class VoskSpeechRecognition():
             if self.rec.AcceptWaveform(data):
 
                 # In case of final result
-                result = self.rec.FinalResult()
-                res = json.loads(self.rec.Result())
-                diction = json.loads(result)
-                lentext = len(diction["text"])
-                print(res)
+                result_final = self.rec.FinalResult()
+                final_dict = json.loads(result_final)
+                lentext = len(final_dict["text"])
                 if lentext > 2:
-                    result_text = diction["text"]
-                    rospy.loginfo(result_text)
-                    isRecognized = True
-
-                    if "spk" in diction:
-                        if spk_sig is not None:
-                            print("Speaker distance:", self._cosine_dist(spk_sig, diction["spk"]))
-                        spk_sig = diction["res"]
-
-                else:
-                    isRecognized = False
+                    final_text = final_dict["text"]
+                    rospy.loginfo(final_text)
+                    
+                    if "spk" in final_dict:
+                        spk_sig = final_dict["spk"]
+                        
                 # Resets current results so the recognition can continue from scratch
                 self.rec.Reset()
-            else:
+            
+            else: # NOTE. Do we ever enter here?
                 # In case of partial result
                 result_partial = self.rec.PartialResult()
                 if (len(result_partial) > 20):
 
-                    isRecognized_partially = True
                     partial_dict = json.loads(result_partial)
-                    partial = partial_dict["partial"]
+                    partial_text = partial_dict["partial"]
 
-            if (isRecognized is True):
-
-                self.msg.isSpeech_recognized = True
-                self.msg.time_recognized = rospy.Time.now()
-                self.msg.final_result = result_text
-                self.msg.partial_result = "unk"
+            # Broadcast the results
+            if final_text != 'unk' or partial_text != 'unk':
+                self.format_msg(final=final_text,
+                                partial=partial_text,
+                                spk_sig=spk_sig)
                 self.pub_vosk.publish(self.msg)
                 rospy.sleep(0.1)
-                self.pub_final.publish(result_text)
-                isRecognized = False
+
+            if final_text != 'unk':
+                self.pub_final.publish(final_text)
+                rospy.sleep(0.1)
+            elif partial_text != 'unk':
+                self.pub_partial.publish(partial_text)
 
 
-            elif (isRecognized_partially is True):
-                if partial != "unk":
-                    self.msg.isSpeech_recognized = False
-                    self.msg.time_recognized = rospy.Time.now()
-                    self.msg.final_result = "unk"
-                    self.msg.partial_result = partial
-                    self.pub_vosk.publish(self.msg)
-                    rospy.sleep(0.1)
-                    self.pub_partial.publish(partial)
-                    partial = "unk"
-                    isRecognized_partially = False
+    def format_msg(self, final = 'unk', partial = 'unk', spk_sig = []):
+        self.msg.header.stamp = rospy.Time.now()
+        self.msg.final_result = final
+        self.msg.partial_result = partial
+        self.msg.spk_xvector = spk_sig
+        #self.msg.is_speech_recognized = 
+        
 
     @staticmethod
-    def _cosine_dist(x, y):
+    def _cosine_dist(x, y): # currently unused
         """ Get the cosine distances between two arrays. Here `x` and `y` are supposed to be two x-vectors. Thus the distance accounts for the similarity between two voices. """
         nx = np.array(x)
         ny = np.array(y)

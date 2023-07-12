@@ -29,11 +29,12 @@ A ROS package for speech-to-text services based on [Vosk](https://github.com/alp
   
 2. Install Dependencies
 
-  If using ROS MELODIC run first: 
-  ```bash
-  sudo apt install python3-pip python3-yaml
-  ```
-  Then run for MELODIC & NOETIC:
+  > :warning: If using ROS Melodic run first: 
+  > ```bash
+  > sudo apt install python3-pip python3-yaml
+  > ```
+  
+  Run
   ```bash
   pip3 install sounddevice
   pip3 install vosk
@@ -98,6 +99,26 @@ roslaunch ros_vosk vosk_node config:=it
 
 If the model you want to use is not already present in your local `models` folder, a dialog window will pop-up to enable you to download it. From the second use on, you will not need this extra step anymore.
 
+## Interface
+
+### `vosk_node.py`
+
+#### Published Topics
+* `speech_recognition/vosk_result`    -> a custom "speech_recognition" message
+* `speech_recognition/final_result`   -> a simple string with the final result
+* `speech_recognition/partial_result` -> a simple string with the partial result
+
+#### Subscribed Topics
+TODO.
+
+### `tts_engine.py`
+
+#### Published Topics
+* `tts/status` -> the state of the engine. True if it is speaking False if it is not. If the status is true vosk_node won't process the audio stream so it won't listen to itself
+
+#### Subscribed Topics
+* `tts/phrase` -> the string to be spoken by the TTS engine. Name your desire and it shall be heard by all in the room..
+
 ### Simulating microphone input
 In some situations, testing `ros_vosk` with real live recordings is not the best option. For instance, you might want to test your code against the same conversation several times, either for debugging a specific issues, or for results reproducibility. Moreover, you might not want to bother your colleagues by repeatedly asking them to talk with you, or you might be working alone when you are in need of a multi-speaker conversation.
 
@@ -115,29 +136,29 @@ Start the `vosk_node` and the audio file you want to send as _fake_ microphone i
 ```
 pavucontrol
 ```
-In the window that pops up, go in the _Recording_ tab and spot the entry associated to your node (it will likely be the onely one, so not too difficult). In the drop-down menù, select the _Monitor of ..._ item. The `vosk node` should now be "listening" to the audio file as it was a microphone input!
+In the window that pops up, go in the _Recording_ tab and spot the entry associated to your node (it will likely be the onely one, so not too difficult). In the drop-down menù, select the _Monitor of ..._ item. The `vosk_node` should now be "listening" to the audio file as it was a microphone input!
 
-## Interface
-
-### Publishing Topics
-* speech_recognition/vosk_result    -> vosk_node.py publishes a custom "speech_recognition" message
-* speech_recognition/final_result   -> vosk_node.py publishes a simple string with the final result
-* speech_recognition/partial_result -> vosk_node.py publishes a simple string with the partial result
-* tts/status -> tts_engine.py publishes the state of the engine. True if it is speaking False if it is not. If the status is true vosk_node won't process the audio stream so it won't listen to itself 
-* tts/phrase -> tts_engine.py subscribes to this topic in order to speak the given string. Name your desire and it shall be heard by all in the room..
+> :note: From now on, your `vosk_node` should "listen" to the fake mic without the need to relaunch `pavucontrol`.
 
 ## TODO
 - [x] languages
-  - [x] support for Italian model
-- [ ] speaker recognition
+  - [x] instructions for use with other languages
+- [ ] add confidence to `SpeechRecognition`
+- [ ] add (tentative) diarization 
   - [x] support for speaker recognition model
   - [ ] speaker tracking based on x-vector
-  - [ ] speaker recognition based on sound direction (for multi-channel microphones)
-- [ ] make the output (partially) ROS4HRI-compliant
-- [ ] msg should be camel-case
+  - [ ] [ROS4HRI](http://wiki.ros.org/hri)-compliant output
+- [x] improve adherence to [ROS naming conventions](http://wiki.ros.org/ROS/Patterns/Conventions)
+  - [x] camel-case messages
 - [ ] make it compatible with `audio_common` (i.e. remove `sounddevice` dependency)
-- [ ] add instruction on how to use `pavucontrol` to simulate microphone input
+  - [ ] move sound acquisition to a separate node
+      - modular architecture
+      - make the `audio` topic available to all nodes in the ROS network with single access point to the HW resource
+- [x] add instruction to install and run in a virtual environment
+  - [ ] move to an `ADVANCED.md` file
+- [x] add instruction on how to use `pavucontrol` to simulate microphone input
   - [ ] add GUI screenshot(s)
+  - [ ] move to an `ADVANCED.md` file
 
 
 ## Authors
